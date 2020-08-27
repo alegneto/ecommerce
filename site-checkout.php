@@ -125,7 +125,9 @@ $app->post("/checkout", function(){
 
 	$order->save();
 
-	header("Location: /order/".$order->getidorder());
+	$order->toSession();
+
+	header("Location: /payment");
 	exit;
 
 });
@@ -141,7 +143,7 @@ $app->get("/order/:idorder", function($idorder){
 	$page = new Page();
 
 	$page->setTpl("payment", [
-		'order'=>$order->getValues()
+		'order' => $order->getValues()
 	]);
 
 });
