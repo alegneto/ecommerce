@@ -128,7 +128,8 @@
                                                 <div class="tab-pane" id="tab-credito" role="tabpanel">
 
                                                     <form action="/payment/credit" class="checkout" method="post" name="checkout" style="padding:10px;" id="form-credit">
-
+														<input type="hidden" name="brand" id="brand-field">
+														
                                                         <div class="row">
                                                             <div class="col-sm-4">
                                                                 <div class="form-row form-row-wide address-field validate-required">
@@ -249,7 +250,7 @@
 <script id="tpl-payment-debit" type="text/x-handlebars-template">
     <div class="form-check" style="padding: 10px;">
         <label class="form-check-label">
-            <input class="form-check-input" type="radio" name="bank" value="{{value}}" checked>
+            <input class="form-check-input" type="radio" name="bank" value="{{value}}">
             <img src="https://stc.pagseguro.uol.com.br/{{image}}" alt="{{value}}">
             {{text}}
         </label>
@@ -280,15 +281,17 @@ scripts.push(function() {
 	PagSeguroDirectPayment.getPaymentMethods({
 		amount: parseFloat("{$order.vltotal}"),
 		success: function(response) {
-			var tplDebit = Handlerbars.compile($("#tpl-payment-debit").html());
-			var tplCredit = Handlerbars.compile($("#tpl-payment-credit").html());
-
+			let tplDebit = Handlebars.compile($("#tpl-payment-debit").html());
+			let tplCredit = Handlebars.compile($("#tpl-payment-credit").html());
+			
 			$.each(response.paymentMethods.ONLINE_DEBIT.options, function(index, option) {
-				$("#tab-debito .contents").append(tplDebit({
-					value:option.name,
-					image:option.images.MEDIUM.path,
-					text:option.displayName
-				}));
+				if (option.status === "AVAILABLE") {
+					$("#tab-debito .contents").append(tplDebit({
+						value:option.name,
+						image:option.images.MEDIUM.path,
+						text:option.displayName
+					}));
+				}
 			});
 
 			$.each(response.paymentMethods.CREDIT_CARD.options, function(index, option) {
@@ -312,6 +315,31 @@ scripts.push(function() {
 			showError(errors.toString());
 		},
 		complete: function(response) {
+		}
+	});
+
+	$("#number_field").on("keyup", function() {
+		let value = $(this).val();
+
+		if (value.length === 6) {
+			PagSeguroDirectPayment.getBrand({
+				cardBin: value.substring(0, 6),
+				success: function(response) {
+					$("#brand-field").val(response.brand.name);
+					console.log(response);
+				},
+				error: function(response) {
+					let errors = [];
+
+					for (let code in response.errors) {
+						errors.push(response.errors[code]);
+					}
+
+					showError(errors.toString());
+				},
+				complete: function(response) {
+				}
+			});
 		}
 	});
 });
