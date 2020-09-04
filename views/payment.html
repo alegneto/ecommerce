@@ -260,10 +260,10 @@
     <img src="https://stc.pagseguro.uol.com.br/{{image}}" alt="{{name}}" style="float:left; margin-right:4px;">
 </script>
 <script id="tpl-installment-free" type="text/x-handlebars-template">
-    <option>{{quantity}}x de R${{installmentAmount}} sem juros</option>
+    <option>{{quantity}}x de {{installmentAmount}} sem juros</option>
 </script>
 <script id="tpl-installment" type="text/x-handlebars-template">
-    <option>{{quantity}}x de R${{installmentAmount}} com juros (R${{totalAmount}})</option>
+    <option>{{quantity}}x de {{installmentAmount}} com juros ({{totalAmount}})</option>
 </script>
 <script src="{$pagseguro.urlJS}"></script>
 <script type="text/javascript">
@@ -272,9 +272,15 @@
 <script>
 scripts.push(function() {
 
-	function showError(error) 
+	function showError(response) 
 	{
-		$("#alert-error span.msg").text(error);
+		let errors = [];
+
+		for (let code in response.errors) {
+			errors.push(response.errors[code]);
+		}
+
+		$("#alert-error span.msg").text(errors.toString());
 		$("#alert-error").removeClass("hide");
 	}
 
@@ -306,13 +312,7 @@ scripts.push(function() {
 			$("#payment-methods").removeClass("hide");
 		},
 		error: function(response) {
-			let errors = [];
-
-			for (let code in response.errors) {
-				errors.push(response.errors[code]);
-			}
-
-			showError(errors.toString());
+			showError(response);
 		},
 		complete: function(response) {
 		}
@@ -326,16 +326,67 @@ scripts.push(function() {
 				cardBin: value.substring(0, 6),
 				success: function(response) {
 					$("#brand-field").val(response.brand.name);
-					console.log(response);
+
+					PagSeguroDirectPayment.getInstallments({
+						amount: parseFloat("{$order.vltotal}"),
+						maxInstallmentNoInterest: parseInt("{$pagseguro.maxInstallmentNoInterest}"),
+						brand: response.brand.name,
+						success: function(response){
+							$("#installments_field").html('<option disabled></option>')
+
+							let tplInstallmentFree = Handlebars.compile($("#tpl-installment-free").html());
+							let tplInstallment = Handlebars.compile($("#tpl-installment").html());
+
+							let formatReal = {
+								minimumFractionDigits: 2,
+								style: "currency",
+								currency: "BRL"
+							};
+
+							$.each(response.installments[$("#brand-field").val()], function(index, installment) {
+								
+								if (parseInt("{$pagseguro.maxInstallment}") > index) {
+
+									let $option;
+
+									if (installment.interestFree === true) {
+										
+										$option = $(tplInstallmentFree({
+											quantity: installment.quantity,
+											installmentAmount: installment.installmentAmount
+												.toLocaleString('pt-BR', formatReal)
+										}));
+
+									} else {
+
+										$option = $(tplInstallment({
+											quantity: installment.quantity,
+											installmentAmount: installment.installmentAmount
+												.toLocaleString('pt-BR', formatReal),
+											totalAmount: installment.totalAmount
+												.toLocaleString('pt-BR', formatReal)
+										}));
+
+									}
+									
+									$option.data("installment", installment);
+									
+									$("#installments_field").append($option);
+								
+								}
+
+							});
+						},
+						error: function(response) {
+							showError(response);
+						},
+						complete: function(response){
+						}
+
+					});
 				},
 				error: function(response) {
-					let errors = [];
-
-					for (let code in response.errors) {
-						errors.push(response.errors[code]);
-					}
-
-					showError(errors.toString());
+					showError(response);
 				},
 				complete: function(response) {
 				}
