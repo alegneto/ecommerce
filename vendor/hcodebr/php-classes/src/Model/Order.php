@@ -217,6 +217,14 @@ class Order extends Model {
 	{
 		$this->setData($_SESSION[Order::SESSION]);
 	}
+
+	public function getAddress():Address
+	{
+		$address = new Address();
+		$address->setData($this->getValues());
+
+		return $address;
+	}
 }
 
 ?>
