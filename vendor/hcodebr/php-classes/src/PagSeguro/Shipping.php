@@ -33,7 +33,7 @@ class CreditCard {
 
 		$this->address = $address;
 		$this->type = $type;
-		$this->coast = $cost;
+		$this->cost = $cost;
 		$this->addressRequired = $addressRequired;
 
 	}
@@ -52,8 +52,8 @@ class CreditCard {
 		$type = $dom->createElement("type", $this->type);
 		$type = $shipping->appendChild($type);
 		
-		$coast = $dom->createElement("coast", number_format($this->coast, 2, ".", ""));
-		$coast = $shipping->appendChild($coast);
+		$cost = $dom->createElement("cost", number_format($this->cost, 2, ".", ""));
+		$cost = $shipping->appendChild($cost);
 		
 		$addressRequired = $dom->createElement("addressRequired", ($this->addressRequired) ? "true" : "false");
 		$addressRequired = $shipping->appendChild($addressRequired);
