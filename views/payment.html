@@ -323,6 +323,16 @@ scripts.push(function() {
 		}
 	});
 
+	$("#installments_field").on("change", function() {
+
+		let installment = $(this).find("option:selected").data("installment");
+
+		$("[name=installments_qtd]").val(installment.quantity);
+		$("[name=installments_value]").val(installment.installmentAmount);
+		$("[name=installments_total]").val(installment.totalAmount);
+		
+	});
+
 	$("#number_field").on("keyup", function() {
 		let value = $(this).val();
 
@@ -377,10 +387,13 @@ scripts.push(function() {
 									$option.data("installment", installment);
 									
 									$("#installments_field").append($option);
-								
+							
 								}
 
 							});
+
+							$("#installments_field").trigger('change');
+
 						},
 						error: function(response) {
 							getResponseError(response);
