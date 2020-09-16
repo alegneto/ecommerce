@@ -24,7 +24,7 @@ class Document
 		switch ($type) {
 			case Document::CPF:
 				
-				if (static::isValidCPF($value)) {
+				if (!static::isValidCPF($value)) {
 					throw new Exception("CPF inválido");
 				}
 				break;
@@ -32,6 +32,9 @@ class Document
 			default:
 				break;
 		}
+
+		$this->type = $type;
+		$this->value = $value;
 	}
 
 	public static function isValidCPF($number):bool

@@ -40,7 +40,7 @@ class Address {
 
 		}
 
-		if (!$$district) {
+		if (!$district) {
 
 			throw new Exception("Informe o bairro do endereço");
 

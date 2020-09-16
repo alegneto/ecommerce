@@ -5,8 +5,6 @@ namespace Hcode\PagSeguro;
 use DOMDocument;
 use DOMElement;
 use Exception;
-use Hcode\PagSeguro\Document;
-use Hcode\PagSeguro\Phone;
 
 class Sender {
 

@@ -6,7 +6,7 @@ use DOMDocument;
 use DOMElement;
 use Exception;
 
-class CreditCard {
+class Shipping {
 
 	const PAC = 1;
 	const SEDEX = 2;
@@ -21,7 +21,7 @@ class CreditCard {
 		Address $address,
 		int $type,
 		float $cost,
-		bool $addressRequired
+		bool $addressRequired = true
 	)
 	{
 		

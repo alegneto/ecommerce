@@ -6,5 +6,5 @@ class Method
 {
 	const CREDIT_CARD = "creditCard";
 	const DEBIT = "eft";
-	const BOLEO = "boleto";
+	const BOLETO = "boleto";
 }
