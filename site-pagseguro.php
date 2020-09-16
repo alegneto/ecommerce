@@ -100,8 +100,8 @@ $app->post('/payment/credit', function() {
 		$item = new Item(
 			(int)$product['idproduct'], 
 			$product['desproduct'],
-			(float)$product['vlprice'],
-			(int)$product['nrqtd']
+			(int)$product['nrqtd'],
+			(float)$product['vlprice']
 		);
 
 		$payment->addItem($item);

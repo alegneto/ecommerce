@@ -67,6 +67,70 @@ class Payment {
 
 		$dom = new DOMDocument("1.0", "ISO-8859-1");
 
+		$payment = $dom->createElement("payment");
+		$payment = $dom->appendChild($payment);
+
+		$mode = $dom->createElement("mode", $this->mode);
+		$mode = $payment->appendChild($mode);
+		
+		$currency = $dom->createElement("currency", $this->currency);
+		$currency = $payment->appendChild($currency);
+		
+		$notificationURL = $dom->createElement("notificationURL", 
+		Config::NOTIFICATION_URL);
+		$notificationURL = $payment->appendChild($notificationURL);
+		
+		$receiverEmail = $dom->createElement("receiverEmail", 
+		(Config::SANDBOX) ? Config::SANDBOX_EMAIL : Config::PRODUCTION_EMAIL);
+		$receiverEmail = $payment->appendChild($receiverEmail);
+		
+		$sender = $this->sender->getDOMElement();
+		$sender = $dom->importNode($sender, true);
+		$sender = $payment->appendChild($sender);
+		
+		$items = $dom->createElement("items");
+		$items = $payment->appendChild($items);
+		
+		foreach($this->items as $_item) {
+			
+			$item = $_item->getDOMElement();
+			$item = $dom->importNode($item, true);
+			$item = $items->appendChild($item);
+			
+		}
+		
+		$reference = $dom->createElement("reference", $this->reference);
+		$reference = $payment->appendChild($reference);
+		
+		$shipping = $this->shipping->getDOMElement();
+		$shipping = $dom->importNode($shipping, true);
+		$shipping = $payment->appendChild($shipping);
+		
+		$extraAmount = $dom->createElement("extraAmount", $this->extraAmount);
+		$extraAmount = $payment->appendChild($extraAmount);
+		
+		$method = $dom->createElement("method", $this->method);
+		$method = $payment->appendChild($method);
+		
+		switch ($this->method) {
+
+			case Method::CREDIT_CARD:
+				
+				$creditCard = $this->creditCard->getDOMElement();
+				$creditCard = $dom->importNode($creditCard, true);
+				$creditCard = $payment->appendChild($creditCard);
+
+			break;
+
+			case Method::DEBIT:
+				
+				$bank = $this->bank->getDOMElement();
+				$bank = $dom->importNode($bank, true);
+				$bank = $payment->appendChild($bank);
+
+			break;
+		}
+		
 
 		return $dom;
 
