@@ -18,10 +18,13 @@ class Config {
 	const SANDBOX_URL_TRANSACTION = "https://ws.sandbox.pagseguro.uol.com.br/v2/transactions";
 	const PRODUCTION_URL_TRANSACTION = "https://ws.pagseguro.uol.com.br/v2/transactions";
 
+	const SANDBOX_URL_NOTIFICATION = "https://ws.sandbox.pagseguro.uol.com.br/v2/transactions/notifications";
+	const PRODUCTION_URL_NOTIFICATION = "https://ws.pagseguro.uol.com.br/v2/transactions/notifications";
+
 	const MAX_INSTALLMENT_NO_INTEREST = 6;
 	const MAX_INSTALLMENT = 10;
 
-	const NOTIFICATION_URL = "http://www.html5dev.com.br/payment/notification";
+	const NOTIFICATION_URL = "http://www.ecommerce.com.br/payment/notification";
 
 	public static function getAuthentication(): array
 	{
@@ -51,5 +54,10 @@ class Config {
 	public static function gerUrlTransaction(): string
 	{
 		return (Config::SANDBOX === true) ? Config::SANDBOX_URL_TRANSACTION : Config::PRODUCTION_URL_TRANSACTION;
+	}
+
+	public static function getNotificationTransactionURL()
+	{
+		return (Config::SANDBOX === true) ? Config::SANDBOX_URL_NOTIFICATION : Config::PRODUCTION_URL_NOTIFICATION;
 	}
 }
