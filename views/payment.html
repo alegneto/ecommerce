@@ -433,6 +433,53 @@ scripts.push(function() {
 		return true;
 	}
 
+	$("#form-boleto").on("submit", function(e) {
+
+		e.preventDefault();
+
+		if (!isValidCPF($("#form-boleto [name=cpf]").val())) {
+			showError("Este número de CPF não é válido.");
+			return false;
+		}
+
+		$("#form-boleto [type=submit]").prop('disabled', true);
+
+		var formData = $(this).serializeArray();
+
+		var params = {};
+
+		$.each(formData, function(index, field) {
+
+			params[field.name] = field.value;
+
+		});
+
+		params.hash = PagSeguroDirectPayment.getSenderHash();
+
+		$.post(
+			"/payment/boleto",
+			$.param(params),
+			function(r) {
+				
+				let response = JSON.parse(r);
+
+				if (response.success) {
+
+					window.location.href = "/payment/success/boleto";
+
+				} else {
+
+					showError("Não foi possível efetuar o pagamento.");
+
+				}
+
+			}
+		);
+
+		$("#form-boleto [type=submit]").prop('disabled', false);
+
+	});
+
 	$("#form-credit").on("submit", function(e) {
 
 		e.preventDefault();
@@ -466,7 +513,7 @@ scripts.push(function() {
 				params.hash = PagSeguroDirectPayment.getSenderHash();
 
 				$.post(
-					"payment/credit",
+					"/payment/credit",
 					$.param(params),
 					function(r) {
 						
@@ -484,13 +531,6 @@ scripts.push(function() {
 
 					}
 				);
-				// PagSeguroDirectPayment.onSenderHashReady(function(response){
-				// 	if(response.status == 'error') {
-				// 		console.log(response.message);
-				// 		return false;
-				// 	}
-				// 	var hash = response.senderHash; //Hash estará disponível nesta variável.
-				// });
 			},
 			error: function(response) {
 				getResponseError(response);
