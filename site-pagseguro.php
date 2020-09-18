@@ -4,6 +4,7 @@ use Hcode\Model\Order;
 use Hcode\Model\User;
 use Hcode\Page;
 use Hcode\PagSeguro\Address;
+use Hcode\PagSeguro\Bank;
 use Hcode\PagSeguro\Config;
 use Hcode\PagSeguro\CreditCard;
 use Hcode\PagSeguro\CreditCard\Holder;
@@ -29,6 +30,24 @@ $app->get('/payment/success/boleto', function() {
 	$page = new Page();
 
 	$page->setTpl('payment-success-boleto', [
+		'order' => $order->getValues()
+	]);
+
+});
+
+$app->get('/payment/success/debit', function() {
+
+	User::verifyLogin(false);
+
+	$order = new Order();
+
+	$order->getFromSession();
+
+	$order->get((int)$order->getidorder());
+
+	$page = new Page();
+
+	$page->setTpl('payment-success-debit', [
 		'order' => $order->getValues()
 	]);
 
@@ -154,30 +173,78 @@ $app->post('/payment/credit', function() {
 
 });
 
-$app->get('/payment', function() {
+$app->post('/payment/debit', function() {
 
 	User::verifyLogin(false);
 
 	$order = new Order();
+
 	$order->getFromSession();
-	
-	$years = [];
-	for ($y = date('Y'); $y < date('Y')+14; $y++) {
-		array_push($years, $y);
+
+	$order->get((int)$order->getidorder());
+
+	$address = $order->getAddress();
+
+	$cart = $order->getCart();
+
+	$cpf = new Document(Document::CPF, $_POST['cpf']);
+
+	$phone = new Phone($_POST['ddd'], $_POST['phone']);
+
+	$shippingAddress = new Address(
+		$address->getdesaddress(),
+		$address->getdesnumber(),
+		$address->getdescomplement(),
+		$address->getdesdistrict(),
+		$address->getdescity(),
+		$address->getdesstate(),
+		$address->getdescountry(),
+		$address->getdeszipcode()
+	);
+
+	$sender = new Sender(
+		$_POST['hash'],
+		$order->getdesperson(),
+		$order->getdesemail(),
+		$phone,
+		$cpf
+	);
+
+	$shipping = new Shipping(
+		$shippingAddress,
+		Shipping::PAC,
+		(float)$cart->getvlfreight()
+	);
+
+	$payment = new Payment(
+		$order->getidorder(),
+		$sender,
+		$shipping
+	);
+
+	foreach ($cart->getProducts() as $product) {
+
+		$item = new Item(
+			(int)$product['idproduct'], 
+			$product['desproduct'],
+			(int)$product['nrqtd'],
+			(float)$product['vlprice']
+		);
+
+		$payment->addItem($item);
+
 	}
 
-	$page = new Page();
-	$page->setTpl("payment", [
-		"order" => $order->getValues(),
-		"msgError" => Order::getError(),
-		"years" => $years,
-		"pagseguro" => [
-			"urlJS" => Config::getUrlJS(),
-			"id" => Transporter::createSession(),
-			"maxInstallmentNoInterest" => Config::MAX_INSTALLMENT_NO_INTEREST,
-			"maxInstallment" => Config::MAX_INSTALLMENT
-		]
+	$bank = new Bank($_POST['bank']);
+
+	$payment->setBank($bank);
+
+	Transporter::sendTransaction($payment);
+	
+	echo json_encode([
+		"success" => true
 	]);
+
 });
 
 $app->post('/payment/boleto', function() {
@@ -189,8 +256,6 @@ $app->post('/payment/boleto', function() {
 	$order->getFromSession();
 
 	$order->get((int)$order->getidorder());
-
-	$birthDate = new DateTime($_POST['birth']);
 
 	$address = $order->getAddress();
 
