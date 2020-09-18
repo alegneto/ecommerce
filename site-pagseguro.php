@@ -92,7 +92,7 @@ $app->post('/payment/credit', function() {
 	$payment = new Payment(
 		$order->getidorder(),
 		$sender,
-		$shipping,
+		$shipping
 	);
 
 	foreach ($cart->getProducts() as $product) {
@@ -110,9 +110,11 @@ $app->post('/payment/credit', function() {
 
 	$payment->setCreditCard($creditCard);
 
-	$dom = $payment->getDOMDocument();
-
-	echo $dom->saveXML();
+	Transporter::sendTransaction($payment);
+	
+	echo json_encode([
+		"success" => true
+	]);
 
 });
 
